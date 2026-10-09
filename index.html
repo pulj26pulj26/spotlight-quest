@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>焦点小侦探 · 带着问题找重点</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:#FFF9EF;color:#33261A;font-family:"PingFang SC","Microsoft YaHei",sans-serif}
+body{min-height:100vh}
+#app{max-width:680px;margin:0 auto;padding:16px 14px 40px}
+.hidden{display:none !important}
+.kicker{font-size:13px;color:#E8703A;letter-spacing:2px;font-weight:700}
+h1{font-size:30px;line-height:1.3;margin:8px 0 6px}
+.sub{font-size:16px;color:#8A7A66;line-height:1.7}
+.btn{display:block;width:100%;border:none;border-radius:16px;padding:16px;font-size:18px;font-weight:700;cursor:pointer;transition:transform .08s;box-shadow:0 4px 0 rgba(51,38,26,.15)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(51,38,26,.15)}
+.btn-orange{background:#E8703A;color:#fff}
+.btn-green{background:#3F7A5A;color:#fff}
+.hero{background:#F6EBD8;border:2px solid #EAD9BE;border-radius:20px;padding:22px 18px;margin:14px 0;text-align:center}
+.hero .gal{font-size:64px;line-height:1.2}
+.rule{display:flex;gap:10px;align-items:flex-start;background:#fff;border:2px solid #EAD9BE;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:15px;line-height:1.55}
+.rule .ico{font-size:24px;flex:none}
+.hud{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 12px;font-size:14px;color:#8A7A66}
+.hud .shelf{font-size:20px;letter-spacing:4px}
+.bubble{position:relative;background:#fff;border:2px solid #EAD9BE;border-radius:16px;padding:12px 16px;font-size:16px;line-height:1.6;margin:8px 0 12px;min-height:56px}
+.bubble:before{content:"";position:absolute;top:-10px;left:28px;width:16px;height:16px;background:#fff;border-left:2px solid #EAD9BE;border-top:2px solid #EAD9BE;transform:rotate(45deg)}
+.bubble .who{font-size:12px;font-weight:700;margin-bottom:2px}
+.bubble.coach .who{color:#E8703A}
+.bubble.det{background:#3F7A5A;border-color:#3F7A5A;color:#fff}
+.bubble.det:before{background:#3F7A5A;border-color:#3F7A5A}
+.bubble.det .who{color:#F4B942}
+.qcard{background:#33261A;color:#FFF9EF;border-radius:16px;padding:14px 18px;margin:6px 0 14px;font-size:18px;font-weight:700;line-height:1.6;display:flex;gap:10px;align-items:center;box-shadow:0 4px 12px rgba(51,38,26,.2)}
+.qcard .torch{font-size:26px;flex:none}
+.sentence{background:#fff;border:2px solid #EAD9BE;border-radius:16px;padding:18px 14px;margin:4px 0 12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.chip{border:2px solid #EAD9BE;background:#F6EBD8;border-radius:12px;padding:10px 14px;font-size:18px;color:#33261A;cursor:pointer;transition:transform .08s;font-family:inherit}
+.chip:active{transform:scale(.93)}
+.chip.lit{background:#F4B942;border-color:#E8703A;box-shadow:0 0 14px rgba(244,185,66,.9);font-weight:700;animation:glow .8s ease}
+@keyframes glow{0%{transform:scale(.9)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.chip.shake{animation:shk .4s}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+#overlay{position:fixed;inset:0;background:rgba(51,38,26,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.ov-card{background:#FFF9EF;border-radius:22px;padding:26px 22px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.ov-card .big{font-size:66px;line-height:1.2}
+.ov-card h2{font-size:24px;margin:8px 0 6px}
+.ov-card p{font-size:15px;color:#8A7A66;line-height:1.7;margin-bottom:16px}
+.cert{background:#fff;border:3px solid #E8703A;border-radius:20px;padding:26px 20px;text-align:center;margin-top:14px;position:relative}
+.cert:before{content:"";position:absolute;inset:7px;border:2px dashed #EAD9BE;border-radius:14px;pointer-events:none}
+.cert .crown{font-size:54px}
+.cert h2{font-size:23px;margin:8px 0 2px;color:#E8703A}
+.cert .cname{font-size:17px;font-weight:700;margin:4px 0 12px}
+.cert .stats{display:flex;justify-content:center;gap:14px;margin:12px 0}
+.cert .stat{background:#F6EBD8;border-radius:12px;padding:10px 16px;font-size:14px}
+.cert .stat b{display:block;font-size:22px;color:#3F7A5A}
+.cert .motto{font-size:14px;color:#8A7A66;line-height:1.7;margin:10px 0 16px}
+.cert .badges{font-size:34px;letter-spacing:8px;margin:6px 0}
+.footer{text-align:center;font-size:12px;color:#B7A98F;margin-top:22px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="scr-start">
+    <div class="kicker">和孩子一起学AI · AI十哲 第七课</div>
+    <h1>焦点小侦探<br>带着问题找重点</h1>
+    <div class="sub">问题是手电筒——<br>照到哪里，哪里就发光！</div>
+    <div class="hero">
+      <div class="gal">🔦📖</div>
+      <div class="sub" style="color:#33261A;font-weight:700">每关先给你一个问题<br>再亮出一句话，重点词藏在里面</div>
+    </div>
+    <div class="rule"><div class="ico">🔦</div><div><b>先看问题</b>：问题是手电筒，先拿稳它</div></div>
+    <div class="rule"><div class="ico">👉</div><div><b>点亮词语</b>：点那个藏着答案的词——照亮它！</div></div>
+    <div class="rule"><div class="ico">⚡</div><div><b>躲开烟雾弹</b>：时间、天气、无关细节……都是来偷你注意力的</div></div>
+    <div style="height:14px"></div>
+    <button class="btn btn-orange" id="btn-start">拿起手电筒 🔦</button>
+  </section>
+
+  <section id="scr-game" class="hidden">
+    <div class="hud">
+      <span id="hud-level">第一关 · 短句找主角</span>
+      <span class="shelf" id="hud-shelf"></span>
+    </div>
+    <div class="qcard"><span class="torch">🔦</span><span id="q-text"></span></div>
+    <div class="sentence" id="sentence"></div>
+    <div class="bubble coach"><div class="who">🤖 小聚教练</div><div id="bub-coach"></div></div>
+    <div class="bubble det"><div class="who">🔦 小侦探（就是你）</div><div id="bub-det"></div></div>
+    <div style="height:8px"></div>
+    <button class="btn btn-green hidden" id="btn-next">下一个案件 →</button>
+  </section>
+
+  <section id="scr-cert" class="hidden">
+    <div class="cert">
+      <div class="crown">🏆</div>
+      <h2>注意力焦点大师证书</h2>
+      <div class="cname">授予：一目十行的小侦探</div>
+      <div class="badges" id="cert-badges"></div>
+      <div class="stats">
+        <div class="stat"><b id="st-hit">0</b>照亮重点</div>
+        <div class="stat"><b id="st-miss">0</b>照偏次数</div>
+      </div>
+      <div class="motto">带着问题读，重点会发光——<br>不是字重要，是「和问题有关的字」才重要。<br>这就是注意力机制，ChatGPT 的心脏！</div>
+      <button class="btn btn-orange" id="btn-restart">再玩一次 🔁</button>
+    </div>
+    <div class="footer">截图发到群里，找老师领纸质奖状哦 🏅</div>
+  </section>
+
+</div>
+
+<div id="overlay" class="hidden"><div class="ov-card" id="ov-card"></div></div>
+
+<script>
+(function(){
+"use strict";
+var AUTOTEST = location.search.indexOf('autotest') >= 0;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ================= 数据 ================= */
+var LEVELS = [
+  {
+    name:'第一关 · 短句找主角',
+    badge:{icon:'🔦', name:'聚光灯新星'},
+    intro:{icon:'🔦', title:'第一关 · 短句找主角', text:'先看问题，再读句子——照亮藏着答案的那个词！'},
+    rounds:[
+      {q:'谁吃了苹果？',
+       words:['小明','在树下','吃了','一个','红苹果'], answer:0,
+       why:'问题问「谁」——照亮人名就对了！',
+       coach:'先拿手电筒：问题问的是「谁」！'},
+      {q:'小猫在哪里睡觉？',
+       words:['小猫','在阳台上','晒着太阳','睡觉'], answer:1,
+       why:'问题问「哪里」——地点词发光！',
+       coach:'这次问题问的是「哪里」哦。'},
+      {q:'妈妈买了几个橘子？',
+       words:['妈妈','下班','买了','三个','橘子'], answer:3,
+       why:'问题问「几个」——数字词才是重点！',
+       coach:'数量数量，找找数字躲在哪？'},
+      {q:'弟弟为什么哭了？',
+       words:['弟弟','的冰淇淋','掉在地上','所以','哭了'], answer:2,
+       why:'问题问「为什么」——原因词被照亮！',
+       coach:'「为什么」要找原因——发生什么事了？'}
+    ]
+  },
+  {
+    name:'第二关 · 长句抗干扰',
+    badge:{icon:'⚡', name:'火眼金睛'},
+    intro:{icon:'⚡', title:'第二关 · 长句抗干扰', text:'句子变长了，烟雾弹变多了——别让它们偷走你的注意力！'},
+    rounds:[
+      {q:'谁把球踢进了球门？',
+       words:['昨天傍晚','穿着红球衣的','10号','一脚','把球','踢进了','球门'], answer:2,
+       why:'「昨天傍晚」是时间烟雾弹——问「谁」，照亮「10号」！',
+       coach:'长句子！先想：问题问「谁」，别的先不管。'},
+      {q:'图书馆星期几不开门？',
+       words:['图书馆','平时','早上九点','开门','但是','星期一','不开门'], answer:5,
+       why:'「早上九点」是烟雾弹——问「星期几」，照亮「星期一」！',
+       coach:'小心！句子里有两个时间，哪个才是答案？'},
+      {q:'飞船要飞去哪个星球？',
+       words:['经过','三个月的','准备','飞船','终于','要飞往','火星'], answer:6,
+       why:'「三个月」是准备时间——问「哪个星球」，照亮「火星」！',
+       coach:'目的地在哪？让星球的名字发光！'},
+      {q:'爷爷钓上来一条什么鱼？',
+       words:['周末的','清晨','爷爷','在河边','钓上来','一条','大鲤鱼'], answer:6,
+       why:'「周末」「清晨」全是烟雾弹——问「什么鱼」，照亮「大鲤鱼」！',
+       coach:'烟雾弹最多的一句！稳住，问题问的是「什么鱼」。'}
+    ]
+  },
+  {
+    name:'第三关 · 一目十行',
+    badge:{icon:'👑', name:'一目十行大师'},
+    intro:{icon:'👑', title:'第三关 · 一目十行', text:'长长的句子，一眼扫过——像真正的注意力机制一样，直接点亮重点！'},
+    rounds:[
+      {q:'谁赢得了唱歌比赛？',
+       words:['在学校','举办的','唱歌比赛上','平时最安静的','小雨','用一首','茉莉花','赢得了','冠军'], answer:4,
+       why:'九个字的长句也拦不住你——问「谁」，照亮「小雨」！',
+       coach:'终极挑战！句子超长，但问题很简单：谁赢了？'},
+      {q:'宝藏藏在老槐树的哪个方向？',
+       words:['探险家们','穿过森林','翻过小山','终于发现','宝藏','就藏在','老槐树','东边的','山洞里'], answer:7,
+       why:'「穿过森林」「翻过小山」全是过程——问「方向」，照亮「东边的」！',
+       coach:'探险故事！问题问的是方向——东南西北，哪个？'},
+      {q:'机器人学会的第一首歌是什么？',
+       words:['小机器人','豆豆','来到地球后','学会了','很多事情','但它最喜欢的','第一首歌','是','小星星'], answer:8,
+       why:'答对了！问题问「歌名」——「小星星」闪闪发光！',
+       coach:'最后一个案件！找到那首歌的名字！'}
+    ]
+  }
+];
+
+/* ================= 状态 ================= */
+function freshState(){
+  return {scr:'start', level:0, round:0, phase:'idle', answer:0,
+          hits:0, mistakes:0, badges:[], done:false, overlay:false};
+}
+var S = freshState();
+
+/* ================= 工具 ================= */
+var timers = [];
+function later(fn, ms){ var t = setTimeout(fn, AUTOTEST ? 20 : ms); timers.push(t); }
+function typeBubble(el, text){
+  el.textContent = '';
+  if(AUTOTEST){ el.textContent = text; return; }
+  var i = 0;
+  var iv = setInterval(function(){
+    i++;
+    el.textContent = text.slice(0, i);
+    if(i >= text.length){ clearInterval(iv); }
+  }, 28);
+  timers.push(iv);
+}
+
+function showScr(name){
+  S.scr = name;
+  $('scr-start').classList.toggle('hidden', name!=='start');
+  $('scr-game').classList.toggle('hidden', name!=='game');
+  $('scr-cert').classList.toggle('hidden', name!=='cert');
+}
+function showOverlay(html){ $('ov-card').innerHTML = html; $('overlay').classList.remove('hidden'); S.overlay = true; }
+function hideOverlay(){ $('overlay').classList.add('hidden'); S.overlay = false; }
+
+/* ================= 流程 ================= */
+function startGame(){
+  S = freshState();
+  showScr('game');
+  levelIntro();
+}
+
+function levelIntro(){
+  var L = LEVELS[S.level];
+  showOverlay(
+    '<div class="big">'+L.intro.icon+'</div>'+
+    '<h2>'+L.intro.title+'</h2>'+
+    '<p>'+L.intro.text+'</p>'+
+    '<button class="btn btn-orange" id="btn-enter">开始侦破 →</button>'
+  );
+  $('btn-enter').addEventListener('click', function(){
+    if($('overlay').classList.contains('hidden')) return;
+    hideOverlay();
+    S.round = 0;
+    dealRound();
+  });
+}
+
+function dealRound(){
+  var L = LEVELS[S.level];
+  var R = L.rounds[S.round];
+  S.phase = 'pick';
+  S.answer = R.answer;
+
+  $('hud-level').textContent = L.name + ' · 案件 ' + (S.round+1) + '/' + L.rounds.length;
+  renderShelf();
+  $('btn-next').classList.add('hidden');
+
+  var html = '';
+  for(var i=0;i<R.words.length;i++){
+    html += '<button class="chip" id="chip'+i+'">'+R.words[i]+'</button>';
+  }
+  $('sentence').innerHTML = html;
+  for(var c=0;c<R.words.length;c++){
+    (function(idx){ $('chip'+idx).addEventListener('click', function(){ pickChip(idx); }); })(c);
+  }
+
+  $('q-text').textContent = '问题：' + R.q;
+  typeBubble($('bub-coach'), R.coach);
+  typeBubble($('bub-det'), '手电筒拿稳了——点亮藏着答案的那个词！');
+}
+
+function pickChip(i){
+  if(S.phase !== 'pick' || S.overlay) return;
+  var L = LEVELS[S.level];
+  var R = L.rounds[S.round];
+  if(i === S.answer){
+    S.phase = 'reveal';
+    S.hits++;
+    $('chip'+i).classList.add('lit');
+    typeBubble($('bub-det'), '照亮它——「' + R.words[i] + '」！');
+    typeBubble($('bub-coach'), R.why);
+    later(function(){ $('btn-next').classList.remove('hidden'); }, 900);
+  }else{
+    S.mistakes++;
+    var el = $('chip'+i);
+    el.classList.add('shake');
+    later(function(){ el.classList.remove('shake'); }, 450);
+    typeBubble($('bub-det'), '「' + R.words[i] + '」？再想想……');
+    typeBubble($('bub-coach'), '这个词是烟雾弹！回到问题：' + R.q);
+  }
+}
+
+function nextRound(){
+  if(S.phase !== 'reveal') return;
+  var L = LEVELS[S.level];
+  S.round++;
+  if(S.round < L.rounds.length){
+    dealRound();
+  }else{
+    awardBadge();
+  }
+}
+
+function awardBadge(){
+  var L = LEVELS[S.level];
+  S.phase = 'badge';
+  S.badges.push(L.badge.icon);
+  renderShelf();
+  showOverlay(
+    '<div class="big">'+L.badge.icon+'</div>'+
+    '<h2>恭喜获得「'+L.badge.name+'」徽章！</h2>'+
+    '<p>问题是手电筒，照到哪里哪里亮——<br>你的光束越来越准了！</p>'+
+    '<button class="btn btn-green" id="btn-continue">'+(S.level < LEVELS.length-1 ? '进入下一关 →' : '领取证书 🏆')+'</button>'
+  );
+  $('btn-continue').addEventListener('click', function(){
+    if($('overlay').classList.contains('hidden')) return;
+    hideOverlay();
+    if(S.level < LEVELS.length-1){
+      S.level++;
+      levelIntro();
+    }else{
+      showCert();
+    }
+  });
+}
+
+function renderShelf(){ $('hud-shelf').textContent = S.badges.join(' '); }
+
+function showCert(){
+  S.done = true;
+  $('cert-badges').textContent = S.badges.join(' ');
+  $('st-hit').textContent = S.hits;
+  $('st-miss').textContent = S.mistakes;
+  showScr('cert');
+}
+
+function resetAll(){
+  for(var i=0;i<timers.length;i++){ clearTimeout(timers[i]); clearInterval(timers[i]); }
+  timers = [];
+  S = freshState();
+  hideOverlay();
+  showScr('start');
+}
+function softRestart(){
+  try{ location.reload(); }catch(e){}
+  setTimeout(resetAll, 400);
+}
+
+/* ================= 绑定 ================= */
+$('btn-start').addEventListener('click', startGame);
+$('btn-next').addEventListener('click', nextRound);
+$('btn-restart').addEventListener('click', softRestart);
+
+/* ================= 调试接口 ================= */
+window.__DBG = {
+  state: function(){
+    return {scr:S.scr, level:S.level, round:S.round, phase:S.phase, answer:S.answer,
+            hits:S.hits, mistakes:S.mistakes,
+            badges:S.badges.slice(), done:S.done, overlay:S.overlay};
+  }
+};
+})();
+</script>
+</body>
+</html>
